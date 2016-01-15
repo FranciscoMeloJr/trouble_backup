@@ -1,4 +1,12 @@
-TEMPLATE = subdirs
+QT += core
+QT -= gui
 
-SUBDIRS += \
-    trouble
+TARGET = trouble
+CONFIG += console
+CONFIG -= app_bundle
+
+TEMPLATE = app
+
+CONFIG += c++11
+
+SOURCES += main.cpp
