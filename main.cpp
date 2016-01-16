@@ -11,6 +11,8 @@
 #include <unistd.h>
 
 /* perf_event_open syscall wrapper */
+#include <unistd.h>
+
 static long
 sys_perf_event_open(struct perf_event_attr *event,
                     pid_t pid, int cpu, int group_fd, unsigned long flags)
@@ -38,6 +40,21 @@ void read_data(QVector<int> &v, QVector<int> &idx)
     for (int i = 0; i < (1 << 18); i++) {
         b = v[idx[i % size] % v.size()];
     }
+}
+
+void do_page_faults(int n)
+{
+    int i = 0;
+    pg = resource.getpagesize()
+    mmap = mmap(-1, n * pg);
+
+    for (int i = 0; i < n; i++)
+    {
+        mm.seek(i * pg);
+        mm.write(b'x');
+    }
+
+    return;
 }
 
 class Sample {
