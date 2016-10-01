@@ -45,13 +45,13 @@ void read_data(QVector<int> &v, QVector<int> &idx)
 void do_page_faults(int n)
 {
     int i = 0;
-    pg = resource.getpagesize()
+    pg = resource.getpagesize();
     mmap = mmap(-1, n * pg);
 
     for (int i = 0; i < n; i++)
     {
         mm.seek(i * pg);
-        mm.write(b'x');
+        mm.write('x');
     }
 
     return;
