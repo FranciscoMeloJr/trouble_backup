@@ -108,6 +108,7 @@ int main(int argc, char *argv[])
     int fd_miss = sys_perf_event_open(&attr_miss, tid, -1, -1, 0);
     int fd_faults = sys_perf_event_open(&attr_faults, tid, -1, -1, 0);
     int n = 10;
+    //Array of samples:
     QVector<Sample> samples(n);
 
     //Scale variable:
@@ -132,7 +133,7 @@ int main(int argc, char *argv[])
 
 
     for (int i = 0; i < n; i++) {
-        //qDebug() << "before";
+        qDebug() << "before";
         timer.restart();
 
         qint64 ret = 0;
@@ -154,14 +155,14 @@ int main(int argc, char *argv[])
             read_data(buf_small, idx_lin);
         }
 
-        //do_compute(work[i % work.size()] * scale);
+        do_compute(work[i % work.size()] * scale);
         ret |= read(fd_inst, &val_inst1, sizeof(val_inst1));
         ret |= read(fd_cpu, &val_cpu1, sizeof(val_cpu1));
         ret |= read(fd_miss, &val_miss1, sizeof(val_miss1));
         ret |= read(fd_faults, &val_faults1, sizeof(val_faults1));
 
         qint64 delta = timer.nsecsElapsed() / 1000;
-        //qDebug() << "after" << delta;
+        qDebug() << "after" << delta;
         samples[i].slow = slow;
         samples[i].delta = delta;
         samples[i].inst = (val_inst1 - val_inst0) / 1000;
@@ -169,9 +170,10 @@ int main(int argc, char *argv[])
         samples[i].miss = (val_miss1 - val_miss0);
         samples[i].faults = (val_faults1 - val_faults0);
     }
-    for (const Sample &s: samples) {
+
+    /*for (const Sample &s: samples) {
         qDebug() << s;
-    }
+    }*/
     return 0;
 }
 
