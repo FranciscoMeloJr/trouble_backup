@@ -24,7 +24,7 @@ static inline pid_t gettid()
 {
     return syscall(SYS_gettid);
 }
-
+/* Compute function: */
 void do_compute(int repeat) {
     volatile int x = 0;
     while(x < repeat) {
@@ -32,6 +32,7 @@ void do_compute(int repeat) {
     }
 }
 
+/*Function to read the data: */
 void read_data(QVector<int> &v, QVector<int> &idx)
 {
     volatile int b = 0;
@@ -42,6 +43,7 @@ void read_data(QVector<int> &v, QVector<int> &idx)
     }
 }
 
+/*Function to generate page faults:
 void do_page_faults(int n)
 {
     int i = 0;
@@ -56,7 +58,8 @@ void do_page_faults(int n)
 
     return;
 }
-
+*/
+/*Class to generate the sampling*/
 class Sample {
 public:
     bool slow;
@@ -71,6 +74,7 @@ public:
     }
 };
 
+//Main:
 int main(int argc, char *argv[])
 {
     QCoreApplication app(argc, argv);
@@ -106,8 +110,14 @@ int main(int argc, char *argv[])
     int n = 10;
     QVector<Sample> samples(n);
 
+    //Scale variable:
     int scale = 1E6;
-    QVector<int> work = { 1, 1, 1, 1, 1, 10 };
+    QVector<int> work;
+    work.append(1);
+    work.append(1);
+    work.append(1);
+    work.append(1);
+    work.append(10);
 
     int sz = 10000000;
     QVector<int> idx_rnd(sz); // 100 000 * sizeof(int) = 400 kio, L1 32kio, LLC 4mb
