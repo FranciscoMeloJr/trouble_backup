@@ -3,6 +3,7 @@
 #include <QDebug>
 #include <QElapsedTimer>
 #include <QVector>
+#include <QFile>
 #include <cassert>
 #include <algorithm>
 
@@ -134,6 +135,16 @@ int main(int argc, char *argv[])
     for (const Sample &s: samples) {
         qDebug() << s;
     }
+
+    QFile file("sample.csv");
+    if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        QTextStream out(&file);
+        for (const Sample &s: samples) {
+            out << s.slow << "," << s.delta << "," << s.inst << "," << s.cpu << "," << s.miss << "\n";
+        }
+        file.close();
+    }
+
     return 0;
 }
 
