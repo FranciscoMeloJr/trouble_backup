@@ -11,6 +11,8 @@
 #include <sys/syscall.h>
 #include <unistd.h>
 
+#include <chrono>
+
 /* perf_event_open syscall wrapper */
 static long
 sys_perf_event_open(struct perf_event_attr *event,
@@ -24,22 +26,30 @@ static inline pid_t gettid()
     return syscall(SYS_gettid);
 }
 
-void do_compute(int repeat) {
-    volatile int x = 0;
-    while(x < repeat) {
-        x++;
+//Class for the tests:
+class Tests {
+public:
+    static void do_compute(int repeat) {
+        volatile int x = 0;
+        while(x < repeat) {
+            x++;
+        }
     }
-}
 
-void read_data(QVector<int> &v, QVector<int> &idx)
-{
-    volatile int b = 0;
-    (void) b;
-    int size = idx.size();
-    for (int i = 0; i < (1 << 20); i++) {
-        b = v[idx[i % size] % v.size()];
+    static void read_data(QVector<int> &v, QVector<int> &idx)
+    {
+        volatile int b = 0;
+        (void) b;
+        int size = idx.size();
+        for (int i = 0; i < (1 << 20); i++) {
+            b = v[idx[i % size] % v.size()];
+        }
     }
-}
+    static int factorial(int n)
+    {
+      return (n == 1 || n == 0) ? 1 : factorial(n - 1) * n;
+    }
+};
 
 class Sample {
 public:
@@ -81,7 +91,7 @@ int main(int argc, char *argv[])
     int fd_cpu = sys_perf_event_open(&attr_cpu, tid, -1, -1, 0);
     int fd_miss = sys_perf_event_open(&attr_cpu, tid, -1, -1, 0);
 
-    int n = 10;
+    int n = 50;
     QVector<Sample> samples(n);
 
     int sz = 100000;
@@ -112,15 +122,18 @@ int main(int argc, char *argv[])
 
         bool slow = (i % 6) == 0;
         if (slow) {
-            read_data(buf_large, idx_rnd);
+//            Tests::read_data(buf_large, idx_rnd);
+              Tests::factorial(100);
         } else {
-            read_data(buf_small, idx_lin);
+//            Tests::read_data(buf_small, idx_lin);
+              Tests::factorial(10);
         }
 
-        //do_compute(work[i % work.size()] * scale);
+//        do_compute(work[i % work.size()] * scale);
         ret |= read(fd_inst, &val_inst1, sizeof(val_inst1));
         ret |= read(fd_cpu, &val_cpu1, sizeof(val_cpu1));
         ret |= read(fd_miss, &val_miss1, sizeof(val_miss1));
+
         qint64 delta = timer.nsecsElapsed() / 1000;
         //qDebug() << "after" << delta;
         samples[i].slow = slow;
