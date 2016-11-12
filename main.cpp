@@ -11,7 +11,8 @@
 #include <sys/syscall.h>
 #include <unistd.h>
 
-#include <chrono>
+#include "tp.h"
+#include <math.h>
 
 /* perf_event_open syscall wrapper */
 static long
@@ -48,6 +49,12 @@ public:
     static int factorial(int n)
     {
       return (n == 1 || n == 0) ? 1 : factorial(n - 1) * n;
+    }
+
+    //http://computing.dcu.ie/~humphrys/Notes/Neural/chaos.html
+    static double sinoide_example(double x){
+
+        return sin((1/x)*(1/(1-x)));
     }
 };
 
@@ -94,7 +101,7 @@ int main(int argc, char *argv[])
     int n = 50;
     QVector<Sample> samples(n);
 
-    int sz = 100000;
+    int sz = 100000*5;
     QVector<int> idx_rnd(sz); // 100 000 * sizeof(int) = 400 kio, L1 32kio, LLC 4mb
     QVector<int> idx_lin(sz);
     QVector<int> buf_large(sz);
@@ -123,10 +130,11 @@ int main(int argc, char *argv[])
         bool slow = (i % 6) == 0;
         if (slow) {
 //            Tests::read_data(buf_large, idx_rnd);
-              Tests::factorial(100);
+            Tests::factorial(1000);
+
         } else {
 //            Tests::read_data(buf_small, idx_lin);
-              Tests::factorial(10);
+          Tests::factorial(3);
         }
 
 //        do_compute(work[i % work.size()] * scale);
@@ -151,7 +159,7 @@ int main(int argc, char *argv[])
     }
 
     //write the csv:
-    QFile file("sample.csv");
+    QFile file("troubleSample.csv");
     if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
         QTextStream out(&file);
         for (const Sample &s: samples) {
@@ -159,6 +167,8 @@ int main(int argc, char *argv[])
         }
         file.close();
     }
+
+    tracepoint(cct, getinfo, 2, 2, "context");
 
     return 0;
 }
