@@ -14,18 +14,7 @@
 #include "tp.h"
 #include <math.h>
 
-/* perf_event_open syscall wrapper */
-static long
-sys_perf_event_open(struct perf_event_attr *event,
-                    pid_t pid, int cpu, int group_fd, unsigned long flags)
-{
-    return syscall(__NR_perf_event_open, event, pid, cpu, group_fd, flags);
-}
-
-static inline pid_t gettid()
-{
-    return syscall(SYS_gettid);
-}
+#include "counter.h"
 
 //Class for the tests:
 class Tests {
@@ -93,10 +82,14 @@ int main(int argc, char *argv[])
     attr_miss.type = PERF_TYPE_HW_CACHE;
     attr_miss.config = (PERF_COUNT_HW_CACHE_L1D) | (PERF_COUNT_HW_CACHE_OP_READ << 8) | (PERF_COUNT_HW_CACHE_RESULT_MISS << 16);
 
+    /*
     pid_t tid = gettid();
     int fd_inst = sys_perf_event_open(&attr_inst, tid, -1, -1, 0);
     int fd_cpu = sys_perf_event_open(&attr_cpu, tid, -1, -1, 0);
     int fd_miss = sys_perf_event_open(&attr_cpu, tid, -1, -1, 0);
+    */
+
+    int fd_inst, fd_cpu, fd_miss;
 
     int n = 50;
     QVector<Sample> samples(n);

@@ -10,12 +10,14 @@ TEMPLATE = app
 CONFIG += c++11
 
 SOURCES += main.cpp \
-    tp.c
+    tp.c \
+    counter.cpp
 
 QMAKE_CXXFLAGS += -std=c++0x \
- -finstrument-functions \
+ -finstrument-functions -finstrument-functions-exclude-file-list=qgenericatomic.h \
 
 LIBS += -llttng-ust -ldl
 
 HEADERS += \
-    tp.h
+    tp.h \
+    counter.h
