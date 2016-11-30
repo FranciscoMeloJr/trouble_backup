@@ -122,6 +122,17 @@ static const Events eventlist[] = {
     { nullptr, PERF_TYPE_MAX, 0 }
 };
 
+class ScopeDisable {
+public:
+    ScopeDisable(Counter *cnt) : m_counter(cnt) {
+        m_counter->disable();
+    }
+    ~ScopeDisable() {
+        m_counter->enable();
+    }
+    Counter *m_counter;
+};
+
 static inline pid_t gettid()
 {
     return syscall(SYS_gettid);
@@ -160,6 +171,8 @@ bool Counter::read(quint64 &value)
      *    { u64         id;           } && PERF_FORMAT_ID
      *  } && !PERF_FORMAT_GROUP
      */
+
+    ScopeDisable temp(this);
 
     struct read_format {
         quint64 value;
@@ -212,6 +225,7 @@ bool Counter::open()
 
     ::fcntl(m_fd, F_SETFD, FD_CLOEXEC);
     ::ioctl(m_fd, PERF_EVENT_IOC_RESET);
+    enable();
     return true;
 }
 

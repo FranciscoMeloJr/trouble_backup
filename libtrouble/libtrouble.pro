@@ -6,10 +6,14 @@ TEMPLATE = lib
 CONFIG += sharedlib
 
 SOURCES += \
-    counter.cpp
+    counter.cpp \
+    workload.cpp \
+    workloadpagefault.cpp
 
 HEADERS += \
-    counter.h
+    counter.h \
+    workload.h \
+    workloadpagefault.h
 
 unix {
     target.path = /usr/lib
