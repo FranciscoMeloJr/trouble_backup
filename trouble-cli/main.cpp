@@ -11,35 +11,38 @@
 #include <sys/syscall.h>
 #include <unistd.h>
 
-/* perf_event_open syscall wrapper */
-static long
-sys_perf_event_open(struct perf_event_attr *event,
-                    pid_t pid, int cpu, int group_fd, unsigned long flags)
-{
-    return syscall(__NR_perf_event_open, event, pid, cpu, group_fd, flags);
-}
+#include <math.h>
 
-static inline pid_t gettid()
-{
-    return syscall(SYS_gettid);
-}
-
-void do_compute(int repeat) {
-    volatile int x = 0;
-    while(x < repeat) {
-        x++;
+//Class for the tests:
+class Tests {
+public:
+    static void do_compute(int repeat) {
+        volatile int x = 0;
+        while(x < repeat) {
+            x++;
+        }
     }
-}
 
-void read_data(QVector<int> &v, QVector<int> &idx)
-{
-    volatile int b = 0;
-    (void) b;
-    int size = idx.size();
-    for (int i = 0; i < (1 << 20); i++) {
-        b = v[idx[i % size] % v.size()];
+    static void read_data(QVector<int> &v, QVector<int> &idx)
+    {
+        volatile int b = 0;
+        (void) b;
+        int size = idx.size();
+        for (int i = 0; i < (1 << 20); i++) {
+            b = v[idx[i % size] % v.size()];
+        }
     }
-}
+    static int factorial(int n)
+    {
+      return (n == 1 || n == 0) ? 1 : factorial(n - 1) * n;
+    }
+
+    //http://computing.dcu.ie/~humphrys/Notes/Neural/chaos.html
+    static double sinoide_example(double x){
+
+        return sin((1/x)*(1/(1-x)));
+    }
+};
 
 class Sample {
 public:
@@ -76,18 +79,19 @@ int main(int argc, char *argv[])
     attr_miss.type = PERF_TYPE_HW_CACHE;
     attr_miss.config = (PERF_COUNT_HW_CACHE_L1D) | (PERF_COUNT_HW_CACHE_OP_READ << 8) | (PERF_COUNT_HW_CACHE_RESULT_MISS << 16);
 
+    /*
     pid_t tid = gettid();
     int fd_inst = sys_perf_event_open(&attr_inst, tid, -1, -1, 0);
     int fd_cpu = sys_perf_event_open(&attr_cpu, tid, -1, -1, 0);
     int fd_miss = sys_perf_event_open(&attr_cpu, tid, -1, -1, 0);
+    */
 
-    int n = 100;
+    int fd_inst, fd_cpu, fd_miss;
+
+    int n = 50;
     QVector<Sample> samples(n);
 
-    int scale = 1E6;
-    QVector<int> work = { 1, 1, 1, 1, 1, 10 };
-
-    int sz = 100000;
+    int sz = 100000*5;
     QVector<int> idx_rnd(sz); // 100 000 * sizeof(int) = 400 kio, L1 32kio, LLC 4mb
     QVector<int> idx_lin(sz);
     QVector<int> buf_large(sz);
@@ -115,15 +119,19 @@ int main(int argc, char *argv[])
 
         bool slow = (i % 6) == 0;
         if (slow) {
-            read_data(buf_large, idx_rnd);
+//            Tests::read_data(buf_large, idx_rnd);
+            Tests::factorial(1000);
+
         } else {
-            read_data(buf_small, idx_lin);
+//            Tests::read_data(buf_small, idx_lin);
+          Tests::factorial(3);
         }
 
-        //do_compute(work[i % work.size()] * scale);
+//        do_compute(work[i % work.size()] * scale);
         ret |= read(fd_inst, &val_inst1, sizeof(val_inst1));
         ret |= read(fd_cpu, &val_cpu1, sizeof(val_cpu1));
         ret |= read(fd_miss, &val_miss1, sizeof(val_miss1));
+
         qint64 delta = timer.nsecsElapsed() / 1000;
         //qDebug() << "after" << delta;
         samples[i].slow = slow;
@@ -131,12 +139,17 @@ int main(int argc, char *argv[])
         samples[i].inst = (val_inst1 - val_inst0) / 1000;
         samples[i].cpu = (val_cpu1 - val_cpu0) / 1000;
         samples[i].miss = (val_miss1 - val_miss0);
+
     }
-    for (const Sample &s: samples) {
+
+    //run through all of them:
+    for (int i = 0; i < n; i++) {
+        Sample s = samples[i];
         qDebug() << s;
     }
 
-    QFile file("sample.csv");
+    //write the csv:
+    QFile file("troubleSample.csv");
     if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
         QTextStream out(&file);
         for (const Sample &s: samples) {

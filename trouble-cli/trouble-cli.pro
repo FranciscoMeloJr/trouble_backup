@@ -1,13 +1,15 @@
 QT += core
 QT -= gui
 
-TARGET = trouble
+TARGET = trouble-cli
 CONFIG += console
 CONFIG -= app_bundle
 
 TEMPLATE = app
 
-CONFIG += c++14
-
 SOURCES += main.cpp
 
+LIBS += -ldl
+
+include(../common.pri)
+include(../libtrouble.pri)
