@@ -1,6 +1,8 @@
 #include <QMap>
-#include <sys/syscall.h>
 #include <unistd.h>
+#include <fcntl.h>
+#include <sys/syscall.h>
+#include <sys/ioctl.h>
 
 #include "counter.h"
 
@@ -133,32 +135,104 @@ sys_perf_event_open(struct perf_event_attr *event,
     return syscall(__NR_perf_event_open, event, pid, cpu, group_fd, flags);
 }
 
-static QMap<QString, int> my_map{{"a", 1}, {"b", 2}, {"c", 3}};
-
-Counter::Counter(QObject *parent) : QObject(parent)
+Counter::Counter(QString name, QObject *parent) :
+    QObject(parent), m_name(name), m_fd(-1)
 {
-    memset(&m_attr, 0, sizeof(m_attr));
-    m_attr.size = sizeof(struct perf_event_attr);
-    m_attr.disabled = true;
-    m_attr.pinned = true;
 }
 
-long Counter::value()
+static const Events* findEventByName(QString name)
 {
-
+    for (int i = 0; eventlist[i].name != nullptr; i++) {
+        if (name.compare(eventlist[i].name) == 0) {
+            return &eventlist[i];
+        }
+    }
+    return nullptr;
 }
 
-int Counter::open()
+bool Counter::read(quint64 &value)
 {
+    /* from the kernel docs:
+     * struct read_format {
+     *  { u64           value;
+     *    { u64         time_enabled; } && PERF_FORMAT_TOTAL_TIME_ENABLED
+     *    { u64         time_running; } && PERF_FORMAT_TOTAL_TIME_RUNNING
+     *    { u64         id;           } && PERF_FORMAT_ID
+     *  } && !PERF_FORMAT_GROUP
+     */
 
+    struct read_format {
+        quint64 value;
+        quint64 time_enabled;
+        quint64 time_running;
+    } results;
+
+    size_t nread = 0;
+    while (nread < sizeof(results)) {
+        char *ptr = reinterpret_cast<char *>(&results);
+        qint64 r = ::read(m_fd, ptr + nread, sizeof(results) - nread);
+        if (r == -1) {
+            perror("read value failed");
+            return false;
+        }
+        nread += quint64(r);
+    }
+
+    if (results.time_running == results.time_enabled) {
+        value = results.value;
+    } else {
+        // scale the results
+        value = results.value * (double(results.time_running) / double(results.time_enabled));
+    }
+    return true;
 }
 
-int Counter::close()
+bool Counter::open()
 {
+    struct perf_event_attr attr;
+    const Events *ev = findEventByName(m_name);
+    if (!ev) {
+        return false;
+    }
 
+    memset(&attr, 0, sizeof(attr));
+    attr.size = sizeof(attr);
+    attr.read_format = PERF_FORMAT_TOTAL_TIME_ENABLED | PERF_FORMAT_TOTAL_TIME_RUNNING;
+    attr.disabled = true;
+    attr.pinned = true;
+    attr.type = ev->type;
+    attr.config = ev->id;
+
+    this->close();
+
+    m_fd = sys_perf_event_open(&attr, 0, -1, -1, 0);
+    if (m_fd < 0) {
+        return false;
+    }
+
+    ::fcntl(m_fd, F_SETFD, FD_CLOEXEC);
+    ::ioctl(m_fd, PERF_EVENT_IOC_RESET);
+    return true;
 }
 
-QStringList Counter::getEventsList()
+void Counter::close()
+{
+    if (m_fd >= 0) {
+        ::close(m_fd);
+    }
+}
+
+void Counter::enable()
+{
+    ::ioctl(m_fd, PERF_EVENT_IOC_ENABLE);
+}
+
+void Counter::disable()
+{
+    ::ioctl(m_fd, PERF_EVENT_IOC_DISABLE);
+}
+
+QStringList Counter::getAvailableEvents()
 {
     QStringList list;
     for (int i = 0; eventlist[i].name != nullptr; i++) {

@@ -9,19 +9,22 @@ class Counter : public QObject
     Q_ENUMS(CounterType)
     Q_OBJECT
 public:
-    explicit Counter(QObject *parent = 0);
-    long value();
-    int open();
-    int close();
+    explicit Counter(QString name, QObject *parent = 0);
+    bool read(quint64 &value);
+    bool open();
+    void close();
+    void enable();
+    void disable();
 
-    static QStringList getEventsList();
+    static QStringList getAvailableEvents();
 
 signals:
 
 public slots:
 
 private:
-    struct perf_event_attr m_attr;
+    QString m_name;
+    int m_fd;
 };
 
 #endif // COUNTER_H
