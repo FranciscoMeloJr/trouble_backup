@@ -117,7 +117,7 @@ static const Events eventlist[] = {
     { "stalled-cycles-backend", PERF_TYPE_HARDWARE, PERF_COUNT_HW_STALLED_CYCLES_BACKEND },
     { "stalled-cycles-frontend", PERF_TYPE_HARDWARE, PERF_COUNT_HW_STALLED_CYCLES_FRONTEND },
     { "task-clock", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_TASK_CLOCK },
-    {   nullptr, PERF_TYPE_MAX, 0 }
+    { nullptr, PERF_TYPE_MAX, 0 }
 };
 
 static inline pid_t gettid()
@@ -156,4 +156,13 @@ int Counter::open()
 int Counter::close()
 {
 
+}
+
+QStringList Counter::getEventsList()
+{
+    QStringList list;
+    for (int i = 0; eventlist[i].name != nullptr; i++) {
+        list.append(eventlist[i].name);
+    }
+    return list;
 }

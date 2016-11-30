@@ -9,13 +9,12 @@ class Counter : public QObject
     Q_ENUMS(CounterType)
     Q_OBJECT
 public:
-    enum CounterType {
-        Instruction,
-    };
     explicit Counter(QObject *parent = 0);
     long value();
     int open();
     int close();
+
+    static QStringList getEventsList();
 
 signals:
 
