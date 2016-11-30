@@ -27,221 +27,97 @@
 #define CACHE_BRANCH_READ           (PERF_COUNT_HW_CACHE_BPU | PERF_COUNT_HW_CACHE_OP_READ << 8 | PERF_COUNT_HW_CACHE_RESULT_ACCESS << 16)
 #define CACHE_BRANCH_READ_MISS      (PERF_COUNT_HW_CACHE_BPU | PERF_COUNT_HW_CACHE_OP_READ << 8 | PERF_COUNT_HW_CACHE_RESULT_MISS << 16)
 
-namespace QTest {
-
-enum QBenchmarkMetric {
-    FramesPerSecond,
-    BitsPerSecond,
-    BytesPerSecond,
-    WalltimeMilliseconds,
-    CPUTicks,
-    InstructionReads,
-    Events,
-    WalltimeNanoseconds,
-    BytesAllocated,
-    CPUMigrations,
-    CPUCycles,
-    BusCycles,
-    StalledCycles,
-    Instructions,
-    BranchInstructions,
-    BranchMisses,
-    CacheReferences,
-    CacheReads,
-    CacheWrites,
-    CachePrefetches,
-    CacheMisses,
-    CacheReadMisses,
-    CacheWriteMisses,
-    CachePrefetchMisses,
-    ContextSwitches,
-    PageFaults,
-    MinorPageFaults,
-    MajorPageFaults,
-    AlignmentFaults,
-    EmulationFaults
-};
-
-}
-
 struct Events {
-    unsigned offset;
+    const char *name;
     quint32 type;
-    quint64 event_id;
-    QTest::QBenchmarkMetric metric;
+    quint64 id;
 };
-
-static const char eventlist_strings[] =
-    "alignment-faults\0"
-    "branch-instructions\0"
-    "branch-load-misses\0"
-    "branch-loads\0"
-    "branch-mispredicts\0"
-    "branch-misses\0"
-    "branch-predicts\0"
-    "branch-read-misses\0"
-    "branch-reads\0"
-    "branches\0"
-    "bus-cycles\0"
-    "cache-misses\0"
-    "cache-references\0"
-    "context-switches\0"
-    "cpu-clock\0"
-    "cpu-cycles\0"
-    "cpu-migrations\0"
-    "cs\0"
-    "cycles\0"
-    "emulation-faults\0"
-    "faults\0"
-    "idle-cycles-backend\0"
-    "idle-cycles-frontend\0"
-    "instructions\0"
-    "l1d-cache-load-misses\0"
-    "l1d-cache-loads\0"
-    "l1d-cache-prefetch-misses\0"
-    "l1d-cache-prefetches\0"
-    "l1d-cache-read-misses\0"
-    "l1d-cache-reads\0"
-    "l1d-cache-store-misses\0"
-    "l1d-cache-stores\0"
-    "l1d-cache-write-misses\0"
-    "l1d-cache-writes\0"
-    "l1d-load-misses\0"
-    "l1d-loads\0"
-    "l1d-prefetch-misses\0"
-    "l1d-prefetches\0"
-    "l1d-read-misses\0"
-    "l1d-reads\0"
-    "l1d-store-misses\0"
-    "l1d-stores\0"
-    "l1d-write-misses\0"
-    "l1d-writes\0"
-    "l1i-cache-load-misses\0"
-    "l1i-cache-loads\0"
-    "l1i-cache-prefetch-misses\0"
-    "l1i-cache-prefetches\0"
-    "l1i-cache-read-misses\0"
-    "l1i-cache-reads\0"
-    "l1i-load-misses\0"
-    "l1i-loads\0"
-    "l1i-prefetch-misses\0"
-    "l1i-prefetches\0"
-    "l1i-read-misses\0"
-    "l1i-reads\0"
-    "llc-cache-load-misses\0"
-    "llc-cache-loads\0"
-    "llc-cache-prefetch-misses\0"
-    "llc-cache-prefetches\0"
-    "llc-cache-read-misses\0"
-    "llc-cache-reads\0"
-    "llc-cache-store-misses\0"
-    "llc-cache-stores\0"
-    "llc-cache-write-misses\0"
-    "llc-cache-writes\0"
-    "llc-load-misses\0"
-    "llc-loads\0"
-    "llc-prefetch-misses\0"
-    "llc-prefetches\0"
-    "llc-read-misses\0"
-    "llc-reads\0"
-    "llc-store-misses\0"
-    "llc-stores\0"
-    "llc-write-misses\0"
-    "llc-writes\0"
-    "major-faults\0"
-    "migrations\0"
-    "minor-faults\0"
-    "page-faults\0"
-    "stalled-cycles-backend\0"
-    "stalled-cycles-frontend\0"
-    "task-clock\0"
-    "\0";
 
 static const Events eventlist[] = {
-    {   0, PERF_TYPE_SOFTWARE, PERF_COUNT_SW_ALIGNMENT_FAULTS, QTest::AlignmentFaults },
-    {  17, PERF_TYPE_HARDWARE, PERF_COUNT_HW_BRANCH_INSTRUCTIONS, QTest::BranchInstructions },
-    {  37, PERF_TYPE_HW_CACHE, CACHE_BRANCH_READ_MISS, QTest::BranchMisses },
-    {  56, PERF_TYPE_HW_CACHE, CACHE_BRANCH_READ, QTest::BranchInstructions },
-    {  69, PERF_TYPE_HW_CACHE, CACHE_BRANCH_READ_MISS, QTest::BranchMisses },
-    {  88, PERF_TYPE_HARDWARE, PERF_COUNT_HW_BRANCH_MISSES, QTest::BranchMisses },
-    { 102, PERF_TYPE_HW_CACHE, CACHE_BRANCH_READ, QTest::BranchInstructions },
-    { 118, PERF_TYPE_HW_CACHE, CACHE_BRANCH_READ_MISS, QTest::BranchMisses },
-    { 137, PERF_TYPE_HW_CACHE, CACHE_BRANCH_READ, QTest::BranchInstructions },
-    { 150, PERF_TYPE_HARDWARE, PERF_COUNT_HW_BRANCH_INSTRUCTIONS, QTest::BranchInstructions },
-    { 159, PERF_TYPE_HARDWARE, PERF_COUNT_HW_BUS_CYCLES, QTest::BusCycles },
-    { 170, PERF_TYPE_HARDWARE, PERF_COUNT_HW_CACHE_MISSES, QTest::CacheMisses },
-    { 183, PERF_TYPE_HARDWARE, PERF_COUNT_HW_CACHE_REFERENCES, QTest::CacheReferences },
-    { 200, PERF_TYPE_SOFTWARE, PERF_COUNT_SW_CONTEXT_SWITCHES, QTest::ContextSwitches },
-    { 217, PERF_TYPE_SOFTWARE, PERF_COUNT_SW_CPU_CLOCK, QTest::WalltimeMilliseconds },
-    { 227, PERF_TYPE_HARDWARE, PERF_COUNT_HW_CPU_CYCLES, QTest::CPUCycles },
-    { 238, PERF_TYPE_SOFTWARE, PERF_COUNT_SW_CPU_MIGRATIONS, QTest::CPUMigrations },
-    { 253, PERF_TYPE_SOFTWARE, PERF_COUNT_SW_CONTEXT_SWITCHES, QTest::ContextSwitches },
-    { 256, PERF_TYPE_HARDWARE, PERF_COUNT_HW_CPU_CYCLES, QTest::CPUCycles },
-    { 263, PERF_TYPE_SOFTWARE, PERF_COUNT_SW_EMULATION_FAULTS, QTest::EmulationFaults },
-    { 280, PERF_TYPE_SOFTWARE, PERF_COUNT_SW_PAGE_FAULTS, QTest::PageFaults },
-    { 287, PERF_TYPE_HARDWARE, PERF_COUNT_HW_STALLED_CYCLES_BACKEND, QTest::StalledCycles },
-    { 307, PERF_TYPE_HARDWARE, PERF_COUNT_HW_STALLED_CYCLES_FRONTEND, QTest::StalledCycles },
-    { 328, PERF_TYPE_HARDWARE, PERF_COUNT_HW_INSTRUCTIONS, QTest::Instructions },
-    { 341, PERF_TYPE_HW_CACHE, CACHE_L1D_READ_MISS, QTest::CacheReads },
-    { 363, PERF_TYPE_HW_CACHE, CACHE_L1D_READ, QTest::CacheReads },
-    { 379, PERF_TYPE_HW_CACHE, CACHE_L1D_PREFETCH_MISS, QTest::CachePrefetches },
-    { 405, PERF_TYPE_HW_CACHE, CACHE_L1D_PREFETCH, QTest::CachePrefetches },
-    { 426, PERF_TYPE_HW_CACHE, CACHE_L1D_READ_MISS, QTest::CacheReads },
-    { 448, PERF_TYPE_HW_CACHE, CACHE_L1D_READ, QTest::CacheReads },
-    { 464, PERF_TYPE_HW_CACHE, CACHE_L1D_WRITE_MISS, QTest::CacheWrites },
-    { 487, PERF_TYPE_HW_CACHE, CACHE_L1D_WRITE, QTest::CacheWrites },
-    { 504, PERF_TYPE_HW_CACHE, CACHE_L1D_WRITE_MISS, QTest::CacheWrites },
-    { 527, PERF_TYPE_HW_CACHE, CACHE_L1D_WRITE, QTest::CacheWrites },
-    { 544, PERF_TYPE_HW_CACHE, CACHE_L1D_READ_MISS, QTest::CacheReads },
-    { 560, PERF_TYPE_HW_CACHE, CACHE_L1D_READ, QTest::CacheReads },
-    { 570, PERF_TYPE_HW_CACHE, CACHE_L1D_PREFETCH_MISS, QTest::CachePrefetches },
-    { 590, PERF_TYPE_HW_CACHE, CACHE_L1D_PREFETCH, QTest::CachePrefetches },
-    { 605, PERF_TYPE_HW_CACHE, CACHE_L1D_READ_MISS, QTest::CacheReads },
-    { 621, PERF_TYPE_HW_CACHE, CACHE_L1D_READ, QTest::CacheReads },
-    { 631, PERF_TYPE_HW_CACHE, CACHE_L1D_WRITE_MISS, QTest::CacheWrites },
-    { 648, PERF_TYPE_HW_CACHE, CACHE_L1D_WRITE, QTest::CacheWrites },
-    { 659, PERF_TYPE_HW_CACHE, CACHE_L1D_WRITE_MISS, QTest::CacheWrites },
-    { 676, PERF_TYPE_HW_CACHE, CACHE_L1D_WRITE, QTest::CacheWrites },
-    { 687, PERF_TYPE_HW_CACHE, CACHE_L1I_READ_MISS, QTest::CacheReads },
-    { 709, PERF_TYPE_HW_CACHE, CACHE_L1I_READ, QTest::CacheReads },
-    { 725, PERF_TYPE_HW_CACHE, CACHE_L1I_PREFETCH_MISS, QTest::CachePrefetches },
-    { 751, PERF_TYPE_HW_CACHE, CACHE_L1I_PREFETCH, QTest::CachePrefetches },
-    { 772, PERF_TYPE_HW_CACHE, CACHE_L1I_READ_MISS, QTest::CacheReads },
-    { 794, PERF_TYPE_HW_CACHE, CACHE_L1I_READ, QTest::CacheReads },
-    { 810, PERF_TYPE_HW_CACHE, CACHE_L1I_READ_MISS, QTest::CacheReads },
-    { 826, PERF_TYPE_HW_CACHE, CACHE_L1I_READ, QTest::CacheReads },
-    { 836, PERF_TYPE_HW_CACHE, CACHE_L1I_PREFETCH_MISS, QTest::CachePrefetches },
-    { 856, PERF_TYPE_HW_CACHE, CACHE_L1I_PREFETCH, QTest::CachePrefetches },
-    { 871, PERF_TYPE_HW_CACHE, CACHE_L1I_READ_MISS, QTest::CacheReads },
-    { 887, PERF_TYPE_HW_CACHE, CACHE_L1I_READ, QTest::CacheReads },
-    { 897, PERF_TYPE_HW_CACHE, CACHE_LLC_READ_MISS, QTest::CacheReads },
-    { 919, PERF_TYPE_HW_CACHE, CACHE_LLC_READ, QTest::CacheReads },
-    { 935, PERF_TYPE_HW_CACHE, CACHE_LLC_PREFETCH_MISS, QTest::CachePrefetches },
-    { 961, PERF_TYPE_HW_CACHE, CACHE_LLC_PREFETCH, QTest::CachePrefetches },
-    { 982, PERF_TYPE_HW_CACHE, CACHE_LLC_READ_MISS, QTest::CacheReads },
-    { 1004, PERF_TYPE_HW_CACHE, CACHE_LLC_READ, QTest::CacheReads },
-    { 1020, PERF_TYPE_HW_CACHE, CACHE_LLC_WRITE_MISS, QTest::CacheWrites },
-    { 1043, PERF_TYPE_HW_CACHE, CACHE_LLC_WRITE, QTest::CacheWrites },
-    { 1060, PERF_TYPE_HW_CACHE, CACHE_LLC_WRITE_MISS, QTest::CacheWrites },
-    { 1083, PERF_TYPE_HW_CACHE, CACHE_LLC_WRITE, QTest::CacheWrites },
-    { 1100, PERF_TYPE_HW_CACHE, CACHE_LLC_READ_MISS, QTest::CacheReads },
-    { 1116, PERF_TYPE_HW_CACHE, CACHE_LLC_READ, QTest::CacheReads },
-    { 1126, PERF_TYPE_HW_CACHE, CACHE_LLC_PREFETCH_MISS, QTest::CachePrefetches },
-    { 1146, PERF_TYPE_HW_CACHE, CACHE_LLC_PREFETCH, QTest::CachePrefetches },
-    { 1161, PERF_TYPE_HW_CACHE, CACHE_LLC_READ_MISS, QTest::CacheReads },
-    { 1177, PERF_TYPE_HW_CACHE, CACHE_LLC_READ, QTest::CacheReads },
-    { 1187, PERF_TYPE_HW_CACHE, CACHE_LLC_WRITE_MISS, QTest::CacheWrites },
-    { 1204, PERF_TYPE_HW_CACHE, CACHE_LLC_WRITE, QTest::CacheWrites },
-    { 1215, PERF_TYPE_HW_CACHE, CACHE_LLC_WRITE_MISS, QTest::CacheWrites },
-    { 1232, PERF_TYPE_HW_CACHE, CACHE_LLC_WRITE, QTest::CacheWrites },
-    { 1243, PERF_TYPE_SOFTWARE, PERF_COUNT_SW_PAGE_FAULTS_MAJ, QTest::MajorPageFaults },
-    { 1256, PERF_TYPE_SOFTWARE, PERF_COUNT_SW_CPU_MIGRATIONS, QTest::CPUMigrations },
-    { 1267, PERF_TYPE_SOFTWARE, PERF_COUNT_SW_PAGE_FAULTS_MIN, QTest::MinorPageFaults },
-    { 1280, PERF_TYPE_SOFTWARE, PERF_COUNT_SW_PAGE_FAULTS, QTest::PageFaults },
-    { 1292, PERF_TYPE_HARDWARE, PERF_COUNT_HW_STALLED_CYCLES_BACKEND, QTest::StalledCycles },
-    { 1315, PERF_TYPE_HARDWARE, PERF_COUNT_HW_STALLED_CYCLES_FRONTEND, QTest::StalledCycles },
-    { 1339, PERF_TYPE_SOFTWARE, PERF_COUNT_SW_TASK_CLOCK, QTest::WalltimeMilliseconds },
-    {   0, PERF_TYPE_MAX, 0, QTest::Events }
+    { "alignment-faults" , PERF_TYPE_SOFTWARE, PERF_COUNT_SW_ALIGNMENT_FAULTS },
+    { "branch-instructions" , PERF_TYPE_HARDWARE, PERF_COUNT_HW_BRANCH_INSTRUCTIONS },
+    { "branch-load-misses", PERF_TYPE_HW_CACHE, CACHE_BRANCH_READ_MISS },
+    { "branch-loads", PERF_TYPE_HW_CACHE, CACHE_BRANCH_READ },
+    { "branch-mispredicts", PERF_TYPE_HW_CACHE, CACHE_BRANCH_READ_MISS },
+    { "branch-misses", PERF_TYPE_HARDWARE, PERF_COUNT_HW_BRANCH_MISSES },
+    { "branch-predicts", PERF_TYPE_HW_CACHE, CACHE_BRANCH_READ },
+    { "branch-read-misses", PERF_TYPE_HW_CACHE, CACHE_BRANCH_READ_MISS },
+    { "branch-reads", PERF_TYPE_HW_CACHE, CACHE_BRANCH_READ },
+    { "branches", PERF_TYPE_HARDWARE, PERF_COUNT_HW_BRANCH_INSTRUCTIONS },
+    { "bus-cycles", PERF_TYPE_HARDWARE, PERF_COUNT_HW_BUS_CYCLES },
+    { "cache-misses", PERF_TYPE_HARDWARE, PERF_COUNT_HW_CACHE_MISSES },
+    { "cache-references", PERF_TYPE_HARDWARE, PERF_COUNT_HW_CACHE_REFERENCES },
+    { "context-switches", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_CONTEXT_SWITCHES },
+    { "cpu-clock", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_CPU_CLOCK },
+    { "cpu-cycles", PERF_TYPE_HARDWARE, PERF_COUNT_HW_CPU_CYCLES },
+    { "cpu-migrations", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_CPU_MIGRATIONS },
+    { "cs", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_CONTEXT_SWITCHES },
+    { "cycles", PERF_TYPE_HARDWARE, PERF_COUNT_HW_CPU_CYCLES },
+    { "emulation-faults", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_EMULATION_FAULTS },
+    { "faults", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_PAGE_FAULTS },
+    { "idle-cycles-backend", PERF_TYPE_HARDWARE, PERF_COUNT_HW_STALLED_CYCLES_BACKEND },
+    { "idle-cycles-frontend", PERF_TYPE_HARDWARE, PERF_COUNT_HW_STALLED_CYCLES_FRONTEND },
+    { "instructions", PERF_TYPE_HARDWARE, PERF_COUNT_HW_INSTRUCTIONS },
+    { "l1d-cache-load-misses", PERF_TYPE_HW_CACHE, CACHE_L1D_READ_MISS },
+    { "l1d-cache-loads", PERF_TYPE_HW_CACHE, CACHE_L1D_READ },
+    { "l1d-cache-prefetch-misses", PERF_TYPE_HW_CACHE, CACHE_L1D_PREFETCH_MISS },
+    { "l1d-cache-prefetches", PERF_TYPE_HW_CACHE, CACHE_L1D_PREFETCH },
+    { "l1d-cache-read-misses", PERF_TYPE_HW_CACHE, CACHE_L1D_READ_MISS },
+    { "l1d-cache-reads", PERF_TYPE_HW_CACHE, CACHE_L1D_READ },
+    { "l1d-cache-store-misses", PERF_TYPE_HW_CACHE, CACHE_L1D_WRITE_MISS },
+    { "l1d-cache-stores", PERF_TYPE_HW_CACHE, CACHE_L1D_WRITE },
+    { "l1d-cache-write-misses", PERF_TYPE_HW_CACHE, CACHE_L1D_WRITE_MISS },
+    { "l1d-cache-writes", PERF_TYPE_HW_CACHE, CACHE_L1D_WRITE },
+    { "l1d-load-misses", PERF_TYPE_HW_CACHE, CACHE_L1D_READ_MISS },
+    { "l1d-loads", PERF_TYPE_HW_CACHE, CACHE_L1D_READ },
+    { "l1d-prefetch-misses", PERF_TYPE_HW_CACHE, CACHE_L1D_PREFETCH_MISS },
+    { "l1d-prefetches", PERF_TYPE_HW_CACHE, CACHE_L1D_PREFETCH },
+    { "l1d-read-misses", PERF_TYPE_HW_CACHE, CACHE_L1D_READ_MISS },
+    { "l1d-reads", PERF_TYPE_HW_CACHE, CACHE_L1D_READ },
+    { "l1d-store-misses", PERF_TYPE_HW_CACHE, CACHE_L1D_WRITE_MISS },
+    { "l1d-stores", PERF_TYPE_HW_CACHE, CACHE_L1D_WRITE },
+    { "l1d-write-misses", PERF_TYPE_HW_CACHE, CACHE_L1D_WRITE_MISS },
+    { "l1d-writes", PERF_TYPE_HW_CACHE, CACHE_L1D_WRITE },
+    { "l1i-cache-load-misses", PERF_TYPE_HW_CACHE, CACHE_L1I_READ_MISS },
+    { "l1i-cache-loads", PERF_TYPE_HW_CACHE, CACHE_L1I_READ },
+    { "l1i-cache-prefetch-misses", PERF_TYPE_HW_CACHE, CACHE_L1I_PREFETCH_MISS },
+    { "l1i-cache-prefetches", PERF_TYPE_HW_CACHE, CACHE_L1I_PREFETCH },
+    { "l1i-cache-read-misses", PERF_TYPE_HW_CACHE, CACHE_L1I_READ_MISS },
+    { "l1i-cache-reads", PERF_TYPE_HW_CACHE, CACHE_L1I_READ },
+    { "l1i-load-misses", PERF_TYPE_HW_CACHE, CACHE_L1I_READ_MISS },
+    { "l1i-loads", PERF_TYPE_HW_CACHE, CACHE_L1I_READ },
+    { "l1i-prefetch-misses", PERF_TYPE_HW_CACHE, CACHE_L1I_PREFETCH_MISS },
+    { "l1i-prefetches", PERF_TYPE_HW_CACHE, CACHE_L1I_PREFETCH },
+    { "l1i-read-misses", PERF_TYPE_HW_CACHE, CACHE_L1I_READ_MISS },
+    { "l1i-reads", PERF_TYPE_HW_CACHE, CACHE_L1I_READ },
+    { "llc-cache-load-misses", PERF_TYPE_HW_CACHE, CACHE_LLC_READ_MISS },
+    { "llc-cache-loads", PERF_TYPE_HW_CACHE, CACHE_LLC_READ },
+    { "llc-cache-prefetch-misses", PERF_TYPE_HW_CACHE, CACHE_LLC_PREFETCH_MISS },
+    { "llc-cache-prefetches", PERF_TYPE_HW_CACHE, CACHE_LLC_PREFETCH },
+    { "llc-cache-read-misses", PERF_TYPE_HW_CACHE, CACHE_LLC_READ_MISS },
+    { "llc-cache-reads", PERF_TYPE_HW_CACHE, CACHE_LLC_READ },
+    { "llc-cache-store-misses", PERF_TYPE_HW_CACHE, CACHE_LLC_WRITE_MISS },
+    { "llc-cache-stores", PERF_TYPE_HW_CACHE, CACHE_LLC_WRITE },
+    { "llc-cache-write-misses", PERF_TYPE_HW_CACHE, CACHE_LLC_WRITE_MISS },
+    { "llc-cache-writes", PERF_TYPE_HW_CACHE, CACHE_LLC_WRITE },
+    { "llc-load-misses", PERF_TYPE_HW_CACHE, CACHE_LLC_READ_MISS },
+    { "llc-loads", PERF_TYPE_HW_CACHE, CACHE_LLC_READ },
+    { "llc-prefetch-misses", PERF_TYPE_HW_CACHE, CACHE_LLC_PREFETCH_MISS },
+    { "llc-prefetches", PERF_TYPE_HW_CACHE, CACHE_LLC_PREFETCH },
+    { "llc-read-misses", PERF_TYPE_HW_CACHE, CACHE_LLC_READ_MISS },
+    { "llc-reads", PERF_TYPE_HW_CACHE, CACHE_LLC_READ },
+    { "llc-store-misses", PERF_TYPE_HW_CACHE, CACHE_LLC_WRITE_MISS },
+    { "llc-stores", PERF_TYPE_HW_CACHE, CACHE_LLC_WRITE },
+    { "llc-write-misses", PERF_TYPE_HW_CACHE, CACHE_LLC_WRITE_MISS },
+    { "llc-writes", PERF_TYPE_HW_CACHE, CACHE_LLC_WRITE },
+    { "major-faults", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_PAGE_FAULTS_MAJ },
+    { "migrations", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_CPU_MIGRATIONS },
+    { "minor-faults", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_PAGE_FAULTS_MIN },
+    { "page-faults", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_PAGE_FAULTS },
+    { "stalled-cycles-backend", PERF_TYPE_HARDWARE, PERF_COUNT_HW_STALLED_CYCLES_BACKEND },
+    { "stalled-cycles-frontend", PERF_TYPE_HARDWARE, PERF_COUNT_HW_STALLED_CYCLES_FRONTEND },
+    { "task-clock", PERF_TYPE_SOFTWARE, PERF_COUNT_SW_TASK_CLOCK },
+    {   nullptr, PERF_TYPE_MAX, 0 }
 };
 
 static inline pid_t gettid()
