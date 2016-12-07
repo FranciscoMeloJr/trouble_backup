@@ -8,6 +8,7 @@ class WorkloadPageFault : public Workload
 public:
     WorkloadPageFault(int pages = 10);
     void run();
+    void reset();
 private:
     int m_pages;
 };

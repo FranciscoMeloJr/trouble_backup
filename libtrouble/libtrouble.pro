@@ -8,12 +8,18 @@ CONFIG += sharedlib
 SOURCES += \
     counter.cpp \
     workload.cpp \
-    workloadpagefault.cpp
+    workloadpagefault.cpp \
+    workloadcachemisses.cpp \
+    workloadinstructions.cpp \
+    createfile.cpp
 
 HEADERS += \
     counter.h \
     workload.h \
-    workloadpagefault.h
+    workloadpagefault.h \
+    workloadcachemisses.h \
+    workloadinstructions.h \
+    createfile.h
 
 unix {
     target.path = /usr/lib

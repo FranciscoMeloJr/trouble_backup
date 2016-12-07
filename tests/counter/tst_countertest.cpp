@@ -24,9 +24,11 @@ void CounterTest::testCounters()
     QVERIFY2(lst.size() > 0, "No events found");
 
     int avail = 0;
+    //for each event in the list:
     for (QString name: lst) {
         quint64 val;
         Counter counter(name);
+        //run the counter:
         if (counter.open()) {
             avail++;
             counter.enable();
@@ -34,7 +36,8 @@ void CounterTest::testCounters()
             counter.disable();
         }
     }
-    qDebug() << avail << "/" << lst.size();
+    //availability:
+    qDebug() << "Availability:" << avail << "/" << lst.size();
 }
 
 QTEST_APPLESS_MAIN(CounterTest)

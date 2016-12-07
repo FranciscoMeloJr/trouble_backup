@@ -9,6 +9,7 @@ WorkloadPageFault::WorkloadPageFault(int pages) : m_pages(pages)
 {
 }
 
+//This function runs the workload:
 void WorkloadPageFault::run()
 {
     size_t page_size = getpagesize();
@@ -24,4 +25,10 @@ void WorkloadPageFault::run()
         buf[i] = i;
     }
     ::munmap(mm, buf_size);
+}
+
+//This function reset the workload:
+void WorkloadPageFault::reset()
+{
+    qDebug() << "Reset";
 }

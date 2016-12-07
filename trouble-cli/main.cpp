@@ -14,6 +14,7 @@
 #include <math.h>
 
 //Class for the tests:
+//command-line interface
 class Tests {
 public:
     static void do_compute(int repeat) {

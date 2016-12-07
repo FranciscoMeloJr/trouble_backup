@@ -1,4 +1,4 @@
-CONFIG   += c++14
+CONFIG += c++14
 
 unix {
     # RPATH is set here for convenience to run the programs in the shadow build

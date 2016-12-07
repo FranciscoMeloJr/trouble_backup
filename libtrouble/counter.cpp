@@ -3,6 +3,7 @@
 #include <fcntl.h>
 #include <sys/syscall.h>
 #include <sys/ioctl.h>
+#include <QStringList>
 
 #include "counter.h"
 
