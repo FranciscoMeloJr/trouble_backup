@@ -11,7 +11,8 @@ SOURCES += \
     workloadpagefault.cpp \
     workloadcachemisses.cpp \
     workloadinstructions.cpp \
-    createfile.cpp
+    createfile.cpp \
+    analysis.cpp
 
 HEADERS += \
     counter.h \
@@ -19,7 +20,8 @@ HEADERS += \
     workloadpagefault.h \
     workloadcachemisses.h \
     workloadinstructions.h \
-    createfile.h
+    createfile.h \
+    analysis.h
 
 unix {
     target.path = /usr/lib
