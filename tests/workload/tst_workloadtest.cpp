@@ -19,6 +19,7 @@ private Q_SLOTS:
     void testCase2();
     void testCase3();
     void testCase4();
+    void testCase5();
 
 };
 
@@ -109,6 +110,24 @@ void WorkloadTest::testCase4(){
     qDebug() << " testCase4 ";
 
     Counter counter("cache-misses");
+    WorkloadInstructions* inst = new WorkloadInstructions();
+
+    QVERIFY2(counter.open(), "open failed");
+    QVERIFY2(counter.read(v1), "read failed");
+    inst->run();
+    QVERIFY2(counter.read(v2), "read failed");
+
+    return;
+
+}
+
+//Fifth test case - instructions 2
+void WorkloadTest::testCase5(){
+
+    quint64 v1, v2;
+    qDebug() << " testCase5 ";
+
+    Counter counter("page-faults");
     WorkloadInstructions* inst = new WorkloadInstructions();
 
     QVERIFY2(counter.open(), "open failed");

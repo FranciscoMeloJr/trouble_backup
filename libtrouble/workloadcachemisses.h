@@ -12,6 +12,7 @@ public:
     void reset();
     void read_data(QVector<int> &v, QVector<int> &idx);
     void init();
+    void set_up(int occurrences);
     void set_size(int s);
     void set_times(int n_times);
 
@@ -19,6 +20,7 @@ private:
     int cache_misses;
     int sz;
     int n = 100;
+    int jump;
     QVector<int> idx_rnd;
     QVector<int> idx_lin;
     QVector<int> buf_large;

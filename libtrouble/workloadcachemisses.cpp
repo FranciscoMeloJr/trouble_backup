@@ -24,11 +24,18 @@ WorkloadCacheMisses::WorkloadCacheMisses(int s) : sz(s)
 
 }
 
+//This function set_up the data
+void WorkloadCacheMisses::set_up(int occurrences)
+{
+    jump = occurrences;
+}
 //This function runs the workload:
 void WorkloadCacheMisses::run()
 {
+    set_up(6);
+    //0.166666667 %
     for (int i = 0; i < n; i++) {
-        bool slow = (i % 6) == 0;
+        bool slow = (i % jump) == 0;
         if (slow) {
                   read_data(buf_large, idx_rnd);
         } else {

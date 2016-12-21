@@ -12,7 +12,7 @@ WorkloadInstructions::WorkloadInstructions(int)
 //This function runs the workload:
 void WorkloadInstructions::run()
 {
-    set_times(100);
+    set_times(10);
 
     for (int i = 0; i < times; i++) {
         bool slow = (i % 6) == 0;
