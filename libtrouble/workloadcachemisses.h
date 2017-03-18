@@ -8,7 +8,7 @@ class WorkloadCacheMisses : public Workload
 {
 public:
     WorkloadCacheMisses(int s = 10000);
-    void run();
+    void run(int slowness_ratio);
     void reset();
     void read_data(QVector<int> &v, QVector<int> &idx);
     void init();
@@ -17,10 +17,10 @@ public:
     void set_times(int n_times);
 
 private:
-    int cache_misses;
-    int sz;
-    int n = 100;
-    int jump;
+    int m_cache_misses;
+    int m_sz;
+    int m_n = 100;
+    int m_jump;
     QVector<int> idx_rnd;
     QVector<int> idx_lin;
     QVector<int> buf_large;

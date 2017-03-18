@@ -2,4 +2,5 @@ TEMPLATE = subdirs
 
 SUBDIRS += \
     counter \
-    workload
+    workload \
+    ../../../../HadronSimulator

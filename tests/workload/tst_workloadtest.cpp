@@ -20,11 +20,12 @@ private Q_SLOTS:
     void testCase3();
     void testCase4();
     void testCase5();
-
+    void testCaseFile();
 };
 
 WorkloadTest::WorkloadTest()
 {
+    testCase1();
 }
 
 //First test case - page faults
@@ -52,9 +53,12 @@ void WorkloadTest::testCase1()
 //Third test case - cache misses
 void WorkloadTest::testCase2()
 {
-    uint exp = 100; // waiting 100 page faults
-    WorkloadPageFault pf(exp); //creating the exp page faults
+    uint exp = 100;
+//    WorkloadCacheMisses cache(); //creating the cache misses
     quint64 v1, v2;
+
+
+    const QStringList lst_speed({"slow", "fast"});
 
     QList<QString> list_speed;
     list_speed << "slow" << "fast";
@@ -70,10 +74,10 @@ void WorkloadTest::testCase2()
     QVERIFY2(counter.open(), "open failed");
     QVERIFY2(counter.read(v1), "read failed");
 
-    pf.run();
+//    pf.run();
     QVERIFY2(counter.read(v2), "read failed");
     QVERIFY2(1+1 == 2, "sum failed");
-    pf.reset();
+//    pf.reset();
 
     quint64 diff = v2 - v1;
     qDebug() << v1 << v2 << diff;
@@ -89,11 +93,11 @@ void WorkloadTest::testCase3(){
     qDebug() << " testCase3 ";
 
     Counter counter("cache-misses");
-    WorkloadCacheMisses* cache = new WorkloadCacheMisses();
+//    WorkloadCacheMisses* cache = new WorkloadCacheMisses();
 
     QVERIFY2(counter.open(), "open failed");
     QVERIFY2(counter.read(v1), "read failed");
-    cache->run();
+//    cache->run(10);
     QVERIFY2(counter.read(v2), "read failed");
 
     //Creating file:
@@ -137,6 +141,14 @@ void WorkloadTest::testCase5(){
 
     return;
 
+}
+
+//Test case for creting a file:
+void WorkloadTest::testCaseFile()
+{
+    //Creating file:
+    CreateFile* cf = new CreateFile();
+    cf->create();
 }
 QTEST_APPLESS_MAIN(WorkloadTest)
 

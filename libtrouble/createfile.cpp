@@ -7,16 +7,16 @@ CreateFile::CreateFile()
     str = QString("filename");
     QTemporaryFile file;
     if (file.open()) {
-       QProcess process;
-       process.start("touch", QStringList() << "/home/a.txt");
-
+       QProcess * p = new QProcess();
+       p->start("touch", QStringList() << "../others/a.txt");
+       delete p;
     }
     else{
-           qDebug("Shape of my heart");
+           qDebug("file not created");
     }
 }
 
 void CreateFile::create()
 {
-    qDebug("x");
+    qDebug("createFile");
 }
