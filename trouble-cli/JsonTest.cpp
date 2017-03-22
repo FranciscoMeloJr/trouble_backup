@@ -30,7 +30,6 @@ void JsonTest::read()
 }
 void JsonTest::print()
 {
-
     cout << "Book: " << obj["book"].asString() << endl;
     cout << "Year: " << obj["year"].asUInt() << endl;
     const Json::Value& characters = obj["characters"]; // array of characters
