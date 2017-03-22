@@ -13,6 +13,7 @@
 
 /* perf_event_open syscall wrapper */
 #include<opencvtest.h>
+#include<JsonTest.h>
 
 static long
 sys_perf_event_open(struct perf_event_attr *event,
@@ -91,7 +92,7 @@ int main(int argc, char *argv[])
     int fd_miss = sys_perf_event_open(&attr_cpu, tid, -1, -1, 0);
     int fd_page = sys_perf_event_open(&attr_page, tid, -1, -1, 0);
 
-    int n = 10;
+    int n = 1000;
     QVector<Sample> samples(n);
 
     int scale = 1E6;
@@ -112,6 +113,9 @@ int main(int argc, char *argv[])
     for (int i = 0; i < n; i++) {
         //qDebug() << "before";
         timer.restart();
+        OpenCVTest* open= new OpenCVTest();
+        JsonTest* json = new JsonTest();
+        json->setUp();
 
         qint64 ret = 0;
         qint64 val_inst0, val_inst1;
@@ -127,9 +131,7 @@ int main(int argc, char *argv[])
         bool slow = false; //version 3.0
 
         assert(ret > 0);
-
-        OpenCVTest* test= new OpenCVTest;
-        test->OpticalFlowDemo();
+        json->read();
 
         //do_compute(work[i % work.size()] * scale);
         ret |= read(fd_inst, &val_inst1, sizeof(val_inst1));
@@ -146,6 +148,7 @@ int main(int argc, char *argv[])
         samples[i].cpu = (val_cpu1 - val_cpu0) / 1000;
         samples[i].miss = (val_miss1 - val_miss0);
         samples[i].page = (val_page1 - val_page0);
+
     }
     for (const Sample &s: samples) {
         qDebug() << s;
