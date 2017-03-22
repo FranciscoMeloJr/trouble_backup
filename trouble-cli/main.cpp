@@ -12,8 +12,9 @@
 #include <unistd.h>
 
 /* perf_event_open syscall wrapper */
-#include<opencvtest.h>
 #include<JsonTest.h>
+
+using namespace std;
 
 static long
 sys_perf_event_open(struct perf_event_attr *event,
@@ -52,6 +53,7 @@ public:
     qint64 cpu;
     qint64 miss;
     qint64 page;
+    qint64 switches;
 
     friend QDebug operator<< (QDebug dbg, const Sample model) {
         dbg << "(" << model.slow << model.delta << "," << model.inst << "," << model.cpu << "," << model.miss << "," << model.page;
@@ -59,12 +61,34 @@ public:
     }
 };
 
+void write_to_file(Sample s){
+    QFile file("new_version.csv");
+    if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        QTextStream out(&file);
+        //out << "bool, time, instructions, cpu, miss, page \n";
+        out << s.slow << "," << s.delta << "," << s.inst << "," << s.cpu << "," << s.miss << "," << s.page << "\n";
+        file.close();
+    }
+};
+
+void write_samples(QList<Sample> samples){
+    QFile file("jsoncpp.csv");
+       if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+           QTextStream out(&file);
+           out << "bool, time, instructions, cpu, miss, page \n";
+           for (const Sample &s: samples) {
+               out << s.slow << "," << s.delta << "," << s.inst << "," << s.cpu << "," << s.miss << "," << s.page << "\n";
+           }
+           file.close();
+       }
+};
+
+
 int main(int argc, char *argv[])
 {
     QCoreApplication app(argc, argv);
 
-    QElapsedTimer timer;
-    perf_event_attr attr_inst, attr_cpu, attr_miss, attr_page;
+    perf_event_attr attr_inst, attr_cpu, attr_miss, attr_page, attr_switches;
 
     memset(&attr_inst, 0, sizeof(attr_inst));
     attr_inst.size = sizeof(attr_inst);
@@ -86,34 +110,31 @@ int main(int argc, char *argv[])
     attr_page.type = PERF_TYPE_SOFTWARE;
     attr_page.config = PERF_COUNT_SW_PAGE_FAULTS;
 
+    memset(&attr_switches, 0, sizeof(attr_switches));
+    attr_switches.size = sizeof(attr_page);
+    attr_switches.type = PERF_TYPE_SOFTWARE;
+    attr_switches.config = PERF_COUNT_SW_CONTEXT_SWITCHES;;
+
+
     pid_t tid = gettid();
     int fd_inst = sys_perf_event_open(&attr_inst, tid, -1, -1, 0);
     int fd_cpu = sys_perf_event_open(&attr_cpu, tid, -1, -1, 0);
     int fd_miss = sys_perf_event_open(&attr_cpu, tid, -1, -1, 0);
     int fd_page = sys_perf_event_open(&attr_page, tid, -1, -1, 0);
+    int fd_switches = sys_perf_event_open(&attr_switches, tid, -1, -1, 0);
 
-    int n = 1000;
-    QVector<Sample> samples(n);
+    int n = 10000;
+    QElapsedTimer timer;
+    QList<Sample> samples;
 
-    int scale = 1E6;
-    QVector<int> work = { 1, 1, 1, 1, 1, 10 };
-
-    int sz = 100000;
-    QVector<int> idx_rnd(sz); // 100 000 * sizeof(int) = 400 kio, L1 32kio, LLC 4mb
-    QVector<int> idx_lin(sz);
-    QVector<int> buf_large(sz);
-    QVector<int> buf_small(10);
-    for (int i = 0; i < sz; i++) {
-        idx_rnd[i] = i;
-        idx_lin[i] = i;
-    }
-    std::random_shuffle(idx_rnd.begin(), idx_rnd.end());
-
+    bool debug = false;
+    freopen("jsoncpp.csv","w",stdout);
 
     for (int i = 0; i < n; i++) {
         //qDebug() << "before";
-        timer.restart();
-        OpenCVTest* open= new OpenCVTest();
+        cout << "0";
+
+        Sample sample;
         JsonTest* json = new JsonTest();
         json->setUp();
 
@@ -122,47 +143,50 @@ int main(int argc, char *argv[])
         qint64 val_cpu0, val_cpu1;
         qint64 val_miss0, val_miss1;
         qint64 val_page0, val_page1;
+        qint64 val_switches0, val_switches1;
 
+        if(debug)
+            cout <<" 1";
         ret |= read(fd_inst, &val_inst0, sizeof(val_inst0));
         ret |= read(fd_cpu, &val_cpu0, sizeof(val_cpu0));
         ret = read(fd_miss, &val_miss0, sizeof(val_miss0));
         ret = read(fd_miss, &val_miss0, sizeof(val_miss0));
         ret = read(fd_page, &val_page0, sizeof(val_page0));
+        ret = read(fd_switches, &val_switches0, sizeof(val_switches0));
         bool slow = false; //version 3.0
 
         assert(ret > 0);
+        timer.restart();
         json->read();
-
+        qint64 delta = timer.nsecsElapsed() / 1000;
+        if(debug)
+            cout << "2";
         //do_compute(work[i % work.size()] * scale);
         ret |= read(fd_inst, &val_inst1, sizeof(val_inst1));
         ret |= read(fd_cpu, &val_cpu1, sizeof(val_cpu1));
         ret |= read(fd_miss, &val_miss1, sizeof(val_miss1));
         ret |= read(fd_page, &val_page1, sizeof(val_page1));
-
-        qint64 delta = timer.nsecsElapsed() / 1000;
+        ret = read(fd_switches, &val_switches1, sizeof(val_switches1));
+        if(debug)
+            cout << "3";
 
         //qDebug() << "after" << delta;
-        samples[i].slow = slow;
-        samples[i].delta = delta;
-        samples[i].inst = (val_inst1 - val_inst0) / 1000;
-        samples[i].cpu = (val_cpu1 - val_cpu0) / 1000;
-        samples[i].miss = (val_miss1 - val_miss0);
-        samples[i].page = (val_page1 - val_page0);
+
+        sample.slow = slow;
+        sample.delta = delta;
+        sample.inst = (val_inst1 - val_inst0) / 1000;
+        sample.cpu = (val_cpu1 - val_cpu0) / 1000;
+        sample.miss = (val_miss1 - val_miss0);
+        sample.page = (val_page1 - val_page0);
+        sample.switches = (val_switches1 - val_switches0);
+
+        if(debug)
+            cout << "4";
+
+        cout << sample.delta << "," << sample.inst << "," << sample.cpu << "," << sample.miss << "," << sample.page << "," << sample.switches << "\n";
 
     }
-    for (const Sample &s: samples) {
-        qDebug() << s;
-    }
 
-    QFile file("optical_flowx.csv");
-    if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-        QTextStream out(&file);
-        out << "bool, time, instructions, cpu, miss, page \n";
-        for (const Sample &s: samples) {
-            out << s.slow << "," << s.delta << "," << s.inst << "," << s.cpu << "," << s.miss << "," << s.page << "\n";
-        }
-        file.close();
-    }
 
     return 0;
 }
