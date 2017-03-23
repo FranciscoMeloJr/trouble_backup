@@ -1,15 +1,42 @@
-#ifndef INLINE_H
-#define INLINE_H
+#ifndef INLINETEST_H
+#define INLINETEST_H
+
+#include <complex>
+#include <vector>
+#include <string>
+#include <iostream>
+
+using namespace std;
+typedef complex<double> complex_d;
+auto square = [&](int x) { return x*x; };
 
 
-class inline
+class InlineTest
 {
 public:
-    inline();
+    InlineTest();
 
-signals:
+    // string   --
+    string getString();
+    //inline string getString_inline();
+    inline string getString_inline(){ string s = "1234567890"; return s; }
 
-public slots:
+    // int   --
+    int getInt();
+    int inline getInt_inline();
+
+    // vector   --
+    vector<int> getVector();
+    vector<int> inline getVector_inline();
+
+    // inline   --
+    int getFunction();
+    int inline getFunction_inline();
+
+    // complex   --
+    complex_d getComplex();
+    complex_d inline getComplex_inline();
+
 };
 
-#endif // INLINE_H
+#endif // INLINETEST_H
