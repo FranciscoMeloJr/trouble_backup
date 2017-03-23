@@ -54,6 +54,8 @@ public:
     qint64 miss;
     qint64 page;
     qint64 switches;
+    qint64 bus;
+    qint64 pref;
 
     friend QDebug operator<< (QDebug dbg, const Sample model) {
         dbg << "(" << model.slow << model.delta << "," << model.inst << "," << model.cpu << "," << model.miss << "," << model.page;
@@ -88,7 +90,7 @@ int main(int argc, char *argv[])
 {
     QCoreApplication app(argc, argv);
 
-    perf_event_attr attr_inst, attr_cpu, attr_miss, attr_page, attr_switches;
+    perf_event_attr attr_inst, attr_cpu, attr_miss, attr_page, attr_switches, attr_pref, attr_bus;
 
     memset(&attr_inst, 0, sizeof(attr_inst));
     attr_inst.size = sizeof(attr_inst);
@@ -111,10 +113,20 @@ int main(int argc, char *argv[])
     attr_page.config = PERF_COUNT_SW_PAGE_FAULTS;
 
     memset(&attr_switches, 0, sizeof(attr_switches));
-    attr_switches.size = sizeof(attr_page);
+    attr_switches.size = sizeof(attr_switches);
     attr_switches.type = PERF_TYPE_SOFTWARE;
-    attr_switches.config = PERF_COUNT_SW_CONTEXT_SWITCHES;;
+    attr_switches.config = PERF_COUNT_SW_CONTEXT_SWITCHES;
 
+    memset(&attr_pref, 0, sizeof(attr_pref));
+    attr_pref.size = sizeof(attr_pref);
+    attr_pref.type = PERF_TYPE_HW_CACHE;
+    attr_pref.config = PERF_COUNT_HW_CACHE_OP_PREFETCH;
+
+
+    memset(&attr_bus, 0, sizeof(attr_bus));
+    attr_bus.size = sizeof(attr_bus);
+    attr_bus.type = PERF_TYPE_HARDWARE;
+    attr_bus.config = PERF_COUNT_HW_BUS_CYCLES;
 
     pid_t tid = gettid();
     int fd_inst = sys_perf_event_open(&attr_inst, tid, -1, -1, 0);
@@ -122,6 +134,8 @@ int main(int argc, char *argv[])
     int fd_miss = sys_perf_event_open(&attr_cpu, tid, -1, -1, 0);
     int fd_page = sys_perf_event_open(&attr_page, tid, -1, -1, 0);
     int fd_switches = sys_perf_event_open(&attr_switches, tid, -1, -1, 0);
+    int fd_pref = sys_perf_event_open(&attr_pref, tid, -1, -1, 0);
+    int fd_bus = sys_perf_event_open(&attr_bus, tid, -1, -1, 0);
 
     int n = 10000;
     QElapsedTimer timer;
@@ -129,6 +143,7 @@ int main(int argc, char *argv[])
 
     bool debug = false;
     freopen("jsoncpp.csv","w",stdout);
+    cout << "time" << "," << "inst" << "," << "cpy cycles" << "," << "misses" << "," << "pages" << "," << "switches" << "," << "bus" << "," << "pref" << "\n";
 
     for (int i = 0; i < n; i++) {
         //qDebug() << "before";
@@ -144,6 +159,7 @@ int main(int argc, char *argv[])
         qint64 val_miss0, val_miss1;
         qint64 val_page0, val_page1;
         qint64 val_switches0, val_switches1;
+        qint64 val_pref0, val_pref1;
 
         if(debug)
             cout <<" 1";
@@ -153,6 +169,8 @@ int main(int argc, char *argv[])
         ret = read(fd_miss, &val_miss0, sizeof(val_miss0));
         ret = read(fd_page, &val_page0, sizeof(val_page0));
         ret = read(fd_switches, &val_switches0, sizeof(val_switches0));
+        read(fd_pref, &val_pref0, sizeof(val_pref0));
+
         bool slow = false; //version 3.0
 
         assert(ret > 0);
@@ -167,6 +185,8 @@ int main(int argc, char *argv[])
         ret |= read(fd_miss, &val_miss1, sizeof(val_miss1));
         ret |= read(fd_page, &val_page1, sizeof(val_page1));
         ret = read(fd_switches, &val_switches1, sizeof(val_switches1));
+        ret = read(fd_pref, &val_pref1, sizeof(val_pref1));
+
         if(debug)
             cout << "3";
 
@@ -179,11 +199,12 @@ int main(int argc, char *argv[])
         sample.miss = (val_miss1 - val_miss0);
         sample.page = (val_page1 - val_page0);
         sample.switches = (val_switches1 - val_switches0);
+        sample.pref = (val_pref1 - val_pref0);
 
         if(debug)
             cout << "4";
 
-        cout << sample.delta << "," << sample.inst << "," << sample.cpu << "," << sample.miss << "," << sample.page << "," << sample.switches << "\n";
+        cout << sample.delta << "," << sample.inst << "," << sample.cpu << "," << sample.miss << "," << sample.page << "," << sample.switches << "," << sample.bus << "," << sample.pref << "\n";
 
     }
 
