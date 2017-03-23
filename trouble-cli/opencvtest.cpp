@@ -42,7 +42,7 @@ int OpenCVTest::cleanUp(bool show){
     imshow("ImageB",imgB);
     imshow("LKpyr_OpticalFlow",imgC);
     }
-
+  waitKey();
   return 0;
 }
 void OpenCVTest::OpticalFlow()
@@ -107,8 +107,19 @@ void OpenCVTest::OpticalFlow()
 
 }
 
+int OpenCVTest::Display(string path , bool show ){
+
+    image = imread(path, CV_LOAD_IMAGE_COLOR);
+    if(show){
+        namedWindow( "Display window", WINDOW_AUTOSIZE );// Create a window for display.
+        imshow( "Display window", image );                   // Show our image inside it.
+
+        waitKey(0);                                          // Wait for a keystroke in the window
+    }
+    return 0;
+}
 //Display Image
-int OpenCVTest::Display( int argc, char** argv ){
+int OpenCVTest::DisplayDemo( int argc, char** argv ){
     if( argc != 2)
         {
          cout <<" Usage: display_image ImageToLoadAndDisplay" << endl;

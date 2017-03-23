@@ -35,6 +35,7 @@ public:
     vector<uchar> features_found;
     const int MAX_CORNERS = 500;
 
+    Mat image;
     int internal_flags = 0;
     //Control Flow:
     void OpticalFlow();
@@ -44,7 +45,8 @@ public:
     int callOpticalFlow();
 
     //Display test:
-    int Display( int argc, char** argv);
+    int Display(string path, bool flag);
+    int DisplayDemo( int argc, char** argv);
 
     //Houghlines:
     int HoughLines( int argc, char** argv );
