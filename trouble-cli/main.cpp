@@ -138,18 +138,20 @@ int do_test(string file_name, bool flag, int total, bool pref)
     QList<Sample> samples;
 
     bool debug = flag;
-    freopen(file_name.c_str(),"w",stdout);
+    if(!debug)
+        freopen(file_name.c_str(),"w",stdout);
     cout << "time" << "," << "inst" << "," << "cpy cycles" << "," << "misses" << "," << "pages" << "," << "switches" << "," << "bus" << "," << "pref" << "\n";
 
     pftest* pf= new pftest();
     pf->init(total);
 
     OpenCVTest* open = new OpenCVTest();
-    open->setUp();
+
 
     for (int i = 0; i < n; i++) {
         //qDebug() << "before";
         cout << "0";
+        open->setUp();
 
         Sample sample;
 //        JsonTest* json = new JsonTest();
@@ -213,7 +215,8 @@ int do_test(string file_name, bool flag, int total, bool pref)
             cout << "4";
 
         cout << sample.delta << "," << sample.inst << "," << sample.cpu << "," << sample.miss << "," << sample.page << "," << sample.switches << "," << sample.bus << "," << sample.pref << "\n";
-        open->cleanUp(false);
+        //open->cleanUp(false);
+        //free(open);
     }
 
     return 0;
@@ -224,5 +227,5 @@ int main(int argc, char *argv[]){
 
     QCoreApplication app(argc, argv);
     //csv, debug, times, pref
-    do_test("flow.csv", false, 10000, true);
+    do_test("flow.csv", false, 1000, true);
 }

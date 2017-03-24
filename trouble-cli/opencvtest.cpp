@@ -43,6 +43,7 @@ int OpenCVTest::cleanUp(bool show){
     imshow("LKpyr_OpticalFlow",imgC);
     }
   waitKey();
+
   return 0;
 }
 void OpenCVTest::OpticalFlow()
@@ -116,6 +117,7 @@ int OpenCVTest::Display(string path , bool show ){
 
         waitKey(0);                                          // Wait for a keystroke in the window
     }
+
     return 0;
 }
 //Display Image
