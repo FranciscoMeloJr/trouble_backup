@@ -156,6 +156,7 @@ int do_test(string file_name, bool flag, int total, bool pref)
         Sample sample;
 //        JsonTest* json = new JsonTest();
 //        json->setUp();
+        open->inicialization();
 
         qint64 ret = 0;
         qint64 val_inst0, val_inst1;
@@ -180,10 +181,11 @@ int do_test(string file_name, bool flag, int total, bool pref)
 
         assert(ret > 0);
         timer.restart();
-//        json->read();
+        //json->read();
         //pf->write(i);
         //open->Display("/home/frank/Desktop/Research/OpenCV/data/obama.jpg" , false);
-        open->HoughLines();
+        //open->HoughLines();
+        open->FaceDetection();
 
         qint64 delta = timer.nsecsElapsed();
         if(debug)
@@ -228,6 +230,5 @@ int main(int argc, char *argv[]){
 
     QCoreApplication app(argc, argv);
     //csv, debug, times, pref
-    bool debug = false;
-    do_test("hough.csv", debug, 1000, true);
+    do_test("hough.csv", true, 10, true);
 }

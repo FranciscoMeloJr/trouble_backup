@@ -40,6 +40,11 @@ public:
     Mat dst, cdst;
     vector<Vec4i> linesVec;
 
+    //FaceDetection:
+    CascadeClassifier cascade, nestedCascade;
+    double scale;
+    bool tryflip;
+
     Mat image;
     int internal_flags = 0;
     //Control Flow:
@@ -50,7 +55,7 @@ public:
     int callOpticalFlow();
 
     //Display test:
-    int Display(string path, bool flag);
+    int Read(string path, bool flag);
     int DisplayDemo( int argc, char** argv);
 
     //Houghlines:
@@ -60,11 +65,13 @@ public:
     void cleanHough(bool flag);
 
     //Facecompare:
-    int FaceCompareDemo( int argc, char** argv );
+    int FaceDetectionDemo();
+    int FaceDetection();
+    int inicialization();
     void detectAndDraw( Mat& img, CascadeClassifier& cascade, CascadeClassifier& nestedCascade, double scale, bool tryflip );
-
+    void finish();
     //Help
-    void help();
+    void version();
     ~OpenCVTest();
 };
 
