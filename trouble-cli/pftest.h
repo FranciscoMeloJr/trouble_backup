@@ -1,15 +1,16 @@
 #ifndef PFTEST_H
 #define PFTEST_H
 
-
 class pftest
 {
+    int* buffer;
+    int size;
 public:
-    pftest();
+    void write_func(int value);
+    void init(int s);
+    int execute(int);
+    void write(int);
 
-signals:
-
-public slots:
 };
 
 #endif // PFTEST_H
