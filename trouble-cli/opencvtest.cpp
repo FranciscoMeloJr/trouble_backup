@@ -108,7 +108,7 @@ void OpenCVTest::OpticalFlow()
 
 }
 
-int OpenCVTest::Display(string path , bool show ){
+int OpenCVTest::Read(string path , bool show ){
 
     image = imread(path, CV_LOAD_IMAGE_COLOR);
     if(show){
@@ -144,30 +144,36 @@ int OpenCVTest::DisplayDemo( int argc, char** argv ){
         return 0;
 }
 
-//HoughLines
-int OpenCVTest::HoughLines( int argc, char** argv ){
-    cv::CommandLineParser parser(argc, argv,
-            "{help h||}{@image|../data/pic1.png|}"
-        );
-        if (parser.has("help"))
+void OpenCVTest::HoughLines(){
+
+        HoughLinesP(dst, this->linesVec, 1, CV_PI/180, 50, 50, 10 );
+
+}
+void OpenCVTest::start(string path){
+
+    src = imread(path, 0);
+
+    Canny(src, dst, 50, 200, 3);
+    cvtColor(dst, cdst, COLOR_GRAY2BGR);
+
+}
+void OpenCVTest::cleanHough(bool flag){
+
+        for( size_t i = 0; i < this->linesVec.size(); i++ )
         {
-            help();
-            return 0;
+            Vec4i l = this->linesVec[i];
+            line( this->cdst, Point(l[0], l[1]), Point(l[2], l[3]), Scalar(0,0,255), 3, LINE_AA);
         }
-        string filename = parser.get<string>("@image");
-        if (filename.empty())
-        {
-            help();
-            cout << "no image_name provided" << endl;
-            return -1;
+        if(flag){
+            imshow("source", this->src);
+            imshow("detected lines", this->cdst);
+            waitKey();
         }
-        Mat src = imread(filename, 0);
-        if(src.empty())
-        {
-            help();
-            cout << "can not open " << filename << endl;
-            return -1;
-        }
+}
+
+int OpenCVTest::HoughLinesDemo(string path, bool flag){
+
+        Mat src = imread(path, 0);
 
         Mat dst, cdst;
         Canny(src, dst, 50, 200, 3);
@@ -176,6 +182,7 @@ int OpenCVTest::HoughLines( int argc, char** argv ){
     #if 0
         vector<Vec2f> lines;
         HoughLines(dst, lines, 1, CV_PI/180, 100, 0, 0 );
+        cout << "xxxx";
         for( size_t i = 0; i < lines.size(); i++ )
         {
             float rho = lines[i][0], theta = lines[i][1];
@@ -189,6 +196,7 @@ int OpenCVTest::HoughLines( int argc, char** argv ){
             line( cdst, pt1, pt2, Scalar(0,0,255), 3, CV_AA);
         }
     #else
+        cout << "yyy";
         vector<Vec4i> lines;
         HoughLinesP(dst, lines, 1, CV_PI/180, 50, 50, 10 );
         for( size_t i = 0; i < lines.size(); i++ )
@@ -197,17 +205,18 @@ int OpenCVTest::HoughLines( int argc, char** argv ){
             line( cdst, Point(l[0], l[1]), Point(l[2], l[3]), Scalar(0,0,255), 3, LINE_AA);
         }
     #endif
-        //imshow("source", src);
-        //imshow("detected lines", cdst);
-
-        waitKey();
+        if(flag){
+            imshow("source", src);
+            imshow("detected lines", cdst);
+            waitKey();
+        }
 
         return 0;
 
 }
 
 //FaceCompare
-int OpenCVTest::FaceCompare( int argc, char** argv ){
+int OpenCVTest::FaceCompareDemo( string path, bool flag, int sc, bool sec){
 
         VideoCapture capture;
         Mat frame, image;
@@ -219,29 +228,18 @@ int OpenCVTest::FaceCompare( int argc, char** argv ){
         string cascadeName;
         string nestedCascadeName;
 
-        cv::CommandLineParser parser(argc, argv,
-            "{help h||}"
-            "{cascade|../data/haarcascades/haarcascade_frontalface_alt.xml|}"
-            "{nested-cascade|../data/haarcascades/haarcascade_eye_tree_eyeglasses.xml|}"
-            "{scale|1|}{try-flip||}{@filename||}"
-        );
-        if (parser.has("help"))
-        {
-            help();
-            return 0;
+        if(sec){
+            cascadeName = parser.get<string>("nested-cascade");
         }
-        cascadeName = parser.get<string>("cascade");
-        nestedCascadeName = parser.get<string>("nested-cascade");
-        scale = parser.get<double>("scale");
+        else{
+            nestedCascadeName = parser.get<string>("nested-cascade");
+        }
+        scale = sc;
         if (scale < 1)
             scale = 1;
-        tryflip = parser.has("try-flip");
-        inputName = parser.get<string>("@filename");
-        if (!parser.check())
-        {
-            parser.printErrors();
-            return 0;
-        }
+        tryflip = false;
+        inputName = path;
+
         if ( !nestedCascade.load( nestedCascadeName ) )
             cerr << "WARNING: Could not load classifier cascade for nested objects" << endl;
         if( !cascade.load( cascadeName ) )

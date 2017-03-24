@@ -151,7 +151,7 @@ int do_test(string file_name, bool flag, int total, bool pref)
     for (int i = 0; i < n; i++) {
         //qDebug() << "before";
         cout << "0";
-        open->setUp();
+        open->start("/home/frank/Desktop/Research/OpenCV/data/obama.jpg");
 
         Sample sample;
 //        JsonTest* json = new JsonTest();
@@ -183,7 +183,8 @@ int do_test(string file_name, bool flag, int total, bool pref)
 //        json->read();
         //pf->write(i);
         //open->Display("/home/frank/Desktop/Research/OpenCV/data/obama.jpg" , false);
-        open->callOpticalFlow();
+        open->HoughLines();
+
         qint64 delta = timer.nsecsElapsed();
         if(debug)
             cout << "2";
@@ -215,7 +216,7 @@ int do_test(string file_name, bool flag, int total, bool pref)
             cout << "4";
 
         cout << sample.delta << "," << sample.inst << "," << sample.cpu << "," << sample.miss << "," << sample.page << "," << sample.switches << "," << sample.bus << "," << sample.pref << "\n";
-        //open->cleanUp(false);
+        open->cleanHough(false);
         //free(open);
     }
 
@@ -227,5 +228,6 @@ int main(int argc, char *argv[]){
 
     QCoreApplication app(argc, argv);
     //csv, debug, times, pref
-    do_test("flow.csv", false, 1000, true);
+    bool debug = false;
+    do_test("hough.csv", debug, 1000, true);
 }

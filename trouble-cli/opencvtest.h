@@ -35,6 +35,11 @@ public:
     vector<uchar> features_found;
     const int MAX_CORNERS = 500;
 
+    //hough
+    Mat src;
+    Mat dst, cdst;
+    vector<Vec4i> linesVec;
+
     Mat image;
     int internal_flags = 0;
     //Control Flow:
@@ -49,10 +54,13 @@ public:
     int DisplayDemo( int argc, char** argv);
 
     //Houghlines:
-    int HoughLines( int argc, char** argv );
+    int HoughLinesDemo(string path, bool flag);
+    void HoughLines();
+    void start(string);
+    void cleanHough(bool flag);
 
     //Facecompare:
-    int FaceCompare( int argc, char** argv );
+    int FaceCompareDemo( int argc, char** argv );
     void detectAndDraw( Mat& img, CascadeClassifier& cascade, CascadeClassifier& nestedCascade, double scale, bool tryflip );
 
     //Help
