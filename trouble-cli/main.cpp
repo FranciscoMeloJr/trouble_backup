@@ -13,6 +13,8 @@
 
 /* perf_event_open syscall wrapper */
 #include<JsonTest.h>
+#include<pftest.h>
+#include<opencvtest.h>
 
 using namespace std;
 
@@ -86,11 +88,10 @@ void write_samples(QList<Sample> samples){
 };
 
 
-int main(int argc, char *argv[])
+int do_test(string file_name, bool flag, int total, bool pref)
 {
-    QCoreApplication app(argc, argv);
 
-    perf_event_attr attr_inst, attr_cpu, attr_miss, attr_page, attr_switches, attr_pref, attr_bus;
+    perf_event_attr attr_inst, attr_cpu, attr_miss, attr_page, attr_switches, attr_pref;
 
     memset(&attr_inst, 0, sizeof(attr_inst));
     attr_inst.size = sizeof(attr_inst);
@@ -117,16 +118,12 @@ int main(int argc, char *argv[])
     attr_switches.type = PERF_TYPE_SOFTWARE;
     attr_switches.config = PERF_COUNT_SW_CONTEXT_SWITCHES;
 
-    memset(&attr_pref, 0, sizeof(attr_pref));
-    attr_pref.size = sizeof(attr_pref);
-    attr_pref.type = PERF_TYPE_HW_CACHE;
-    attr_pref.config = PERF_COUNT_HW_CACHE_OP_PREFETCH;
-
-
-    memset(&attr_bus, 0, sizeof(attr_bus));
-    attr_bus.size = sizeof(attr_bus);
-    attr_bus.type = PERF_TYPE_HARDWARE;
-    attr_bus.config = PERF_COUNT_HW_BUS_CYCLES;
+    if(pref){
+        memset(&attr_pref, 0, sizeof(attr_pref));
+        attr_pref.size = sizeof(attr_pref);
+        attr_pref.type = PERF_TYPE_HW_CACHE;
+        attr_pref.config = PERF_COUNT_HW_CACHE_OP_PREFETCH;
+    }
 
     pid_t tid = gettid();
     int fd_inst = sys_perf_event_open(&attr_inst, tid, -1, -1, 0);
@@ -135,23 +132,28 @@ int main(int argc, char *argv[])
     int fd_page = sys_perf_event_open(&attr_page, tid, -1, -1, 0);
     int fd_switches = sys_perf_event_open(&attr_switches, tid, -1, -1, 0);
     int fd_pref = sys_perf_event_open(&attr_pref, tid, -1, -1, 0);
-    int fd_bus = sys_perf_event_open(&attr_bus, tid, -1, -1, 0);
 
-    int n = 10000;
+    int n = total;
     QElapsedTimer timer;
     QList<Sample> samples;
 
-    bool debug = false;
-    freopen("jsoncpp.csv","w",stdout);
+    bool debug = flag;
+    freopen(file_name.c_str(),"w",stdout);
     cout << "time" << "," << "inst" << "," << "cpy cycles" << "," << "misses" << "," << "pages" << "," << "switches" << "," << "bus" << "," << "pref" << "\n";
+
+    pftest* pf= new pftest();
+    pf->init(total);
+
+    OpenCVTest* open = new OpenCVTest();
+    open->setUp();
 
     for (int i = 0; i < n; i++) {
         //qDebug() << "before";
         cout << "0";
 
         Sample sample;
-        JsonTest* json = new JsonTest();
-        json->setUp();
+//        JsonTest* json = new JsonTest();
+//        json->setUp();
 
         qint64 ret = 0;
         qint64 val_inst0, val_inst1;
@@ -169,14 +171,18 @@ int main(int argc, char *argv[])
         ret = read(fd_miss, &val_miss0, sizeof(val_miss0));
         ret = read(fd_page, &val_page0, sizeof(val_page0));
         ret = read(fd_switches, &val_switches0, sizeof(val_switches0));
-        read(fd_pref, &val_pref0, sizeof(val_pref0));
+        if(pref)
+            read(fd_pref, &val_pref0, sizeof(val_pref0));
 
         bool slow = false; //version 3.0
 
         assert(ret > 0);
         timer.restart();
-        json->read();
-        qint64 delta = timer.nsecsElapsed() / 1000;
+//        json->read();
+        //pf->write(i);
+        //open->Display("/home/frank/Desktop/Research/OpenCV/data/obama.jpg" , false);
+        open->callOpticalFlow();
+        qint64 delta = timer.nsecsElapsed();
         if(debug)
             cout << "2";
         //do_compute(work[i % work.size()] * scale);
@@ -185,7 +191,8 @@ int main(int argc, char *argv[])
         ret |= read(fd_miss, &val_miss1, sizeof(val_miss1));
         ret |= read(fd_page, &val_page1, sizeof(val_page1));
         ret = read(fd_switches, &val_switches1, sizeof(val_switches1));
-        ret = read(fd_pref, &val_pref1, sizeof(val_pref1));
+        if(pref)
+            ret = read(fd_pref, &val_pref1, sizeof(val_pref1));
 
         if(debug)
             cout << "3";
@@ -199,15 +206,23 @@ int main(int argc, char *argv[])
         sample.miss = (val_miss1 - val_miss0);
         sample.page = (val_page1 - val_page0);
         sample.switches = (val_switches1 - val_switches0);
-        sample.pref = (val_pref1 - val_pref0);
+        if(pref)
+            sample.pref = (val_pref1 - val_pref0);
 
         if(debug)
             cout << "4";
 
         cout << sample.delta << "," << sample.inst << "," << sample.cpu << "," << sample.miss << "," << sample.page << "," << sample.switches << "," << sample.bus << "," << sample.pref << "\n";
-
+        open->cleanUp(false);
     }
 
-
     return 0;
+};
+
+//Main
+int main(int argc, char *argv[]){
+
+    QCoreApplication app(argc, argv);
+    //csv, debug, times, pref
+    do_test("flow.csv", false, 10000, true);
 }
