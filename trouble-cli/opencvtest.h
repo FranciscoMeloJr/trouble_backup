@@ -47,6 +47,11 @@ public:
 
     Mat image;
     int internal_flags = 0;
+
+    //Edge:
+    int edgeThresh = 1;
+    Mat gray, edge, cedge;
+
     //Control Flow:
     void OpticalFlow();
     int OpticalFlowDemo();
@@ -70,6 +75,11 @@ public:
     int inicialization();
     void detectAndDraw( Mat& img, CascadeClassifier& cascade, CascadeClassifier& nestedCascade, double scale, bool tryflip );
     void finish();
+
+    //Edge detection:
+    void EdgeDemo(string, bool);
+    static void onTrackbar(int, void*);
+
     //Help
     void version();
     ~OpenCVTest();

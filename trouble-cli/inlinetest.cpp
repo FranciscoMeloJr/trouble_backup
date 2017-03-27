@@ -11,9 +11,9 @@ int InlineTest::getInt(){
    return 27;
 }
 
-int inline InlineTest::getInt_inline(){
-   return 27;
-}
+//int inline InlineTest::getInt_inline(){
+//   return 27;
+//}
 
 //String --
 
@@ -31,6 +31,7 @@ string InlineTest::getString(){
 
 //   return s;
 //}
+
 //Vector --
 inline vector<int> InlineTest::getVector_inline(){
    vector<int> v = { 16, 2, 77, 40, 12071 };

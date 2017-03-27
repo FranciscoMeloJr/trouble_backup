@@ -23,7 +23,7 @@ public:
 
     // int   --
     int getInt();
-    int inline getInt_inline();
+    inline int getInt_inline() {int i = 27; return i; }
 
     // vector   --
     vector<int> getVector();
