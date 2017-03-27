@@ -15,6 +15,7 @@
 #include<JsonTest.h>
 #include<pftest.h>
 #include<opencvtest.h>
+#include<inlinetest.h>
 
 using namespace std;
 
@@ -147,6 +148,7 @@ int do_test(string file_name, bool flag, int total, bool pref)
 
     OpenCVTest* open = new OpenCVTest();
 
+    InlineTest* inli = new InlineTest();
 
     for (int i = 0; i < n; i++) {
         //qDebug() << "before";
@@ -156,7 +158,8 @@ int do_test(string file_name, bool flag, int total, bool pref)
         Sample sample;
 //        JsonTest* json = new JsonTest();
 //        json->setUp();
-        open->inicialization();
+//        open->inicialization();
+
 
         qint64 ret = 0;
         qint64 val_inst0, val_inst1;
@@ -185,8 +188,8 @@ int do_test(string file_name, bool flag, int total, bool pref)
         //pf->write(i);
         //open->Display("/home/frank/Desktop/Research/OpenCV/data/obama.jpg" , false);
         //open->HoughLines();
-        open->FaceDetection();
-
+        //open->FaceDetection();
+        inli->getString();
         qint64 delta = timer.nsecsElapsed();
         if(debug)
             cout << "2";
@@ -230,5 +233,5 @@ int main(int argc, char *argv[]){
 
     QCoreApplication app(argc, argv);
     //csv, debug, times, pref
-    do_test("hough.csv", true, 10, true);
+    do_test("inlineX.csv", true, 10000, true);
 }
